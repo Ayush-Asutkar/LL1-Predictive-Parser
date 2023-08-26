@@ -70,7 +70,8 @@ public class ProductionRule {
 //                "leftHandSide='" + leftHandSide + '\'' +
 //                ", rightHandSide=" + rightHandSide +
 //                '}';
-        return "ProductionRule: " + leftHandSide + " -> " + rightHandSide;
+//        return "ProductionRule: " + leftHandSide + " -> " + rightHandSide;
+        return leftHandSide + " -> " + rightHandSide;
     }
 
     // for testing

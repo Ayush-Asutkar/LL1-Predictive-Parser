@@ -1,9 +1,6 @@
 import model.ProductionRule;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Grammar {
     private static final String EPSILON = String.valueOf('\u03B5');
@@ -17,6 +14,18 @@ public class Grammar {
         this.productionRules = new ArrayList<>();
         this.terminalSymbols = new HashSet<>();
         this.nonTerminalSymbols = new HashSet<>();
+    }
+
+    public List<ProductionRule> getProductionRules() {
+        return Collections.unmodifiableList(productionRules);
+    }
+
+    public Set<String> getTerminalSymbols() {
+        return Collections.unmodifiableSet(terminalSymbols);
+    }
+
+    public Set<String> getNonTerminalSymbols() {
+        return Collections.unmodifiableSet(nonTerminalSymbols);
     }
 
     public void addTerminalSymbol(String str) {
