@@ -1,13 +1,10 @@
 package model;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ProductionRule {
     private final String leftHandSide;
-    private final Set<String> rightHandSide;
+    private final Set<List<String>> rightHandSide;
 
     public ProductionRule(String leftHandSide) {
         this.leftHandSide = leftHandSide;
@@ -18,27 +15,29 @@ public class ProductionRule {
         return leftHandSide;
     }
 
-    public Set<String> getRightHandSide() {
-        return Collections.unmodifiableSet(rightHandSide);
+    public Set<List<String>> getRightHandSide() {
+        return Collections.unmodifiableSet(this.rightHandSide);
     }
 
-    public void setNewRightHandSide(Set<String> rightHandSide) {
+    public void setNewRightHandSide(Set<List<String>> rightHandSide) {
         this.rightHandSide.clear();
         this.addAllRightHandSide(rightHandSide);
     }
 
-    public void addRightHandSide (String rightHandSide) {
-        this.rightHandSide.add(rightHandSide);
+    public void addRightHandSide (List<String> rightHandSide) {
+        this.rightHandSide.add(new ArrayList<>(rightHandSide));
     }
 
-    public void addAllRightHandSide (Set<String> rightHandSideAll) {
-        this.rightHandSide.addAll(rightHandSideAll);
+    public void addAllRightHandSide (Set<List<String>> rightHandSideAll) {
+        for (List<String> elem : rightHandSideAll) {
+            this.addRightHandSide(elem);
+        }
     }
 
     public void printProductionRule () {
         System.out.print(this.leftHandSide + " -> ");
         StringBuilder stringBuilder = new StringBuilder();
-        for (String right: this.rightHandSide) {
+        for (List<String> right: this.rightHandSide) {
             stringBuilder.append(" ").append(right).append(" |");
         }
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -77,10 +76,24 @@ public class ProductionRule {
     // for testing
     public static void main(String[] args) {
         ProductionRule productionRule = new ProductionRule("S");
-        productionRule.addRightHandSide("Sa");
-        productionRule.addRightHandSide("Sb");
-        productionRule.addRightHandSide("c");
-        productionRule.addRightHandSide("d");
+        List<String> right = new ArrayList<>();
+        right.add("S");
+        right.add("a");
+        productionRule.addRightHandSide(right);
+
+        right.clear();
+        right.add("S");
+        right.add("b");
+        productionRule.addRightHandSide(right);
+
+        right.clear();
+        right.add("c");
+        productionRule.addRightHandSide(right);
+
+        right.clear();
+        right.add("d");
+        productionRule.addRightHandSide(right);
+
         productionRule.printProductionRule();
     }
 }
