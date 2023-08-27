@@ -251,31 +251,39 @@ public class Grammar {
         }
     }
 
-    private int findCommonPrefixForTwoString(String first, String second) {
-        String small = first;
-        String large = second;
-        if (small.length() > large.length()) {
+    private int findCommonPrefixForTwoListOfString(List<String> first, List<String> second) {
+        if(first.isEmpty()  ||  second.isEmpty()  ||  !(first.get(0).equals(second.get(0)))) {
+            return -1;
+        }
+
+        List<String> small = first;
+        List<String> large = second;
+        if (small.size() > large.size()) {
             small = second;
             large = first;
         }
 
         int index = 0;
-        for (char c: large.toCharArray()) {
-            if (index == small.length()) {
+        for (String largeString: large) {
+            if (index == small.size()) {
                 break;
             }
-            if (c != small.charAt(index)) {
+            if (!largeString.equals(small.get(index))) {
                 break;
             }
             index++;
         }
 
+        //for 0-based indexing
+        index--;
+
         return index;
     }
 
-    private String findStringWhichIsLongestCommonPrefixForArray(List<String> rightHandSide) {
+    private List<String> findStringWhichIsLongestCommonPrefixForArray(List<List<String>> rightHandSide) {
         int indexWithCommonPref = -1;
         int outerCommonPrefixIndex = Integer.MAX_VALUE;
+
         for (int i=0; i<rightHandSide.size(); i++) {
             int commonPrefixIndex = Integer.MAX_VALUE;
             for (int j=i+1; j<rightHandSide.size(); j++) {
@@ -283,10 +291,11 @@ public class Grammar {
 //                System.out.println("j -> " + rightHandSide.get(j));
 
                 // Check if this two has a common prefix
-                int currCommonPrefixIndex = findCommonPrefixForTwoString(rightHandSide.get(i), rightHandSide.get(j));
-//                System.out.println(commonPrefixIndex + " : " + rightHandSide.get(i).substring(0, commonPrefixIndex));
+                int currCommonPrefixIndex = findCommonPrefixForTwoListOfString(rightHandSide.get(i), rightHandSide.get(j));
+//                System.out.println(currCommonPrefixIndex);
+//                System.out.println(currCommonPrefixIndex + " : " + rightHandSide.get(i).subList(0, currCommonPrefixIndex+1));
 
-                if (currCommonPrefixIndex != 0) {
+                if (currCommonPrefixIndex >= 0) {
                     commonPrefixIndex = Math.min(currCommonPrefixIndex, commonPrefixIndex);
                 }
             }
@@ -302,6 +311,7 @@ public class Grammar {
 //                System.out.println("outerCommonPrefixIndex = " + outerCommonPrefixIndex);
             }
         }
+
         if (indexWithCommonPref == -1) {
             // no common prefix for any string
 //            System.out.println("No common prefix");
@@ -310,56 +320,34 @@ public class Grammar {
 //        System.out.println("indexWithCommonPref = " + indexWithCommonPref + ", and the string corresponding to it is: " + rightHandSide.get(indexWithCommonPref));
 //        System.out.println("String = " + rightHandSide.get(indexWithCommonPref).substring(0, outerCommonPrefixIndex));
 
-        return rightHandSide.get(indexWithCommonPref).substring(0, outerCommonPrefixIndex);
-    }
-
-    private List<String> convertProductionRuleToStringList(Set<List<String>> rules) {
         List<String> result = new ArrayList<>();
-
-        for (List<String> rule: rules) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String inside: rule) {
-                stringBuilder.append(inside);
-            }
-            result.add(stringBuilder.toString());
-        }
-
-//        System.out.println(result);
-        return result;
-    }
-
-    private int findIndexTillWhereCommonPrefixIsPresentInRule (List<String> rule, String longestCommonPrefix) {
-        if (longestCommonPrefix.isEmpty()) {
-            return -1;
-        }
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < rule.size(); i++) {
-            stringBuilder.append(rule.get(i));
-            if (longestCommonPrefix.length() < stringBuilder.length()) {
-                return -1;
-            }
-
-            if (stringBuilder.toString().equals(longestCommonPrefix)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private List<String> breakLongestCommonPrefixToList(List<String> rule, int index) {
-        List<String> result = new ArrayList<>();
-        for (int i=0; i<=index; i++) {
-            result.add(rule.get(i));
+        for (int i=0; i<=outerCommonPrefixIndex; i++) {
+            result.add(rightHandSide.get(indexWithCommonPref).get(i));
         }
         return result;
+//        return rightHandSide.get(indexWithCommonPref).substring(0, outerCommonPrefixIndex);
+//        return null;
+    }
+
+    private boolean checkRuleStartsWithCommonPrefix(List<String> rule, List<String> longestCommonPrefix) {
+        for(int i=0; i<longestCommonPrefix.size(); i++) {
+            if(rule.size() == i) {
+                // rule was shorter
+                return false;
+            }
+
+            if (!rule.get(i).equals(longestCommonPrefix.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private boolean applyAlgorithmForProducingAnEquivalentLeftFactoredOnParticularRule(ProductionRule productionRule){
 //        System.out.println("To apply rule on: " + productionRule);
 
-        String longestCommonPrefix = this.findStringWhichIsLongestCommonPrefixForArray(convertProductionRuleToStringList(productionRule.getRightHandSide()));
+        List<String> longestCommonPrefix = this.findStringWhichIsLongestCommonPrefixForArray(new ArrayList<>(productionRule.getRightHandSide()));
         if(longestCommonPrefix == null) {
 //            System.out.println("No common prefix");
             return false;
@@ -375,38 +363,32 @@ public class Grammar {
         Set<List<String>> amendRules = new HashSet<>();
         Set<List<String>> newRulesForNewName = new HashSet<>();
 
-        int indexInLongestCommonPrefix = -1;
-        List<String> ruleForFindingListOfLongestCommonPrefix = null;
-
         for (List<String> rule: productionRule.getRightHandSide()) {
-            int indexTillWhereCommonPrefixPresent = this.findIndexTillWhereCommonPrefixIsPresentInRule(rule, longestCommonPrefix);
-            if (indexTillWhereCommonPrefixPresent >= 0) {
-                indexInLongestCommonPrefix = indexTillWhereCommonPrefixPresent;
-                ruleForFindingListOfLongestCommonPrefix = rule;
-                if (indexTillWhereCommonPrefixPresent == (rule.size() - 1)) {
+            if (this.checkRuleStartsWithCommonPrefix(rule, longestCommonPrefix)) {
+                if (rule.size() == longestCommonPrefix.size()) {
                     List<String> forEpsilon = new ArrayList<>();
                     forEpsilon.add(EPSILON);
                     newRulesForNewName.add(forEpsilon);
                 } else {
-                    List<String> currNewList = new ArrayList<>(rule);
-                    for (int i=0; i<indexTillWhereCommonPrefixPresent+1; i++) {
-                        currNewList.remove(0);
+                    List<String> toAdd = new ArrayList<>();
+                    for (int i=longestCommonPrefix.size(); i <rule.size(); i++) {
+                        toAdd.add(rule.get(i));
                     }
-
-                    newRulesForNewName.add(currNewList);
+                    newRulesForNewName.add(toAdd);
                 }
             } else {
                 amendRules.add(rule);
             }
         }
+
         List<String> forNewName = new ArrayList<>();
-        forNewName.addAll(breakLongestCommonPrefixToList(ruleForFindingListOfLongestCommonPrefix, indexInLongestCommonPrefix));
+        forNewName.addAll(longestCommonPrefix);
         forNewName.add(newName);
         amendRules.add(forNewName);
-
-//        System.out.println("newRulesForNewName = " + newRulesForNewName);
-//        System.out.println("amendRules = " + amendRules);
-
+//
+////        System.out.println("newRulesForNewName = " + newRulesForNewName);
+////        System.out.println("amendRules = " + amendRules);
+//
         //amend the rules
         productionRule.setNewRightHandSide(amendRules);
 
@@ -441,9 +423,9 @@ public class Grammar {
         Grammar grammar = new Grammar();
 //        grammar.addRule("A -> aAB | aBc | aAc");
 //        grammar.addRule("E -> b");
-        grammar.addTerminalSymbol("a");
-        grammar.addTerminalSymbol("b");
-        grammar.addNonTerminalSymbol("S");
+//        grammar.addTerminalSymbol("a");
+//        grammar.addTerminalSymbol("b");
+//        grammar.addNonTerminalSymbol("S");
 //        grammar.addRule("S -> S a | S b | c | d");
 
 //        grammar.addRule("A -> B a | A a | c");
@@ -460,10 +442,11 @@ public class Grammar {
 //        grammar.applyAlgorithmForRemovalOfLeftRecursion();
 //        grammar.printGrammar();
 
-//        grammar.addRule("A -> a A B | a B c | a A c");
 //        grammar.addRule("S -> b S S a a S | b S S a S b | b S b | a");
+//        grammar.addRule("A -> a A B | a B c | a A c");
 //        grammar.addRule("S -> a S S b S | a S a S b | a b b | b");
 //        grammar.addRule("S -> a | a b | a b c | a b c d");
+
         grammar.addRule("S -> a A d | a B");
         grammar.addRule("A -> a | a b");
         grammar.addRule("B -> c c d | d d c");
