@@ -17,6 +17,7 @@ public class Grammar {
     public Grammar() {
         this.productionRules = new ArrayList<>();
         this.terminalSymbols = new HashSet<>();
+        this.terminalSymbols.add("$");
         this.nonTerminalSymbols = new HashSet<>();
         this.firstSet = new HashMap<>();
         this.followSet = new HashMap<>();
@@ -125,8 +126,6 @@ public class Grammar {
             }
         }
 
-        this.nonTerminalSymbols.add(newName);
-
         return newName;
     }
 
@@ -188,6 +187,9 @@ public class Grammar {
         if (leftRecursiveOne.isEmpty()) {
             return;
         }
+
+        // add the new name to Non-Terminal Symbols
+        this.addNonTerminalSymbol(newName);
 
         Set<List<String>> changeRuleForFirst = new HashSet<>();
         Set<List<String>> newRuleForNewName = new HashSet<>();
@@ -351,6 +353,9 @@ public class Grammar {
 
         String leftHandSide = productionRule.getLeftHandSide();
         String newName = findNewName(leftHandSide);
+
+        // add the new name to set of non-terminal symbols
+        this.addNonTerminalSymbol(newName);
 
         Set<List<String>> amendRules = new HashSet<>();
         Set<List<String>> newRulesForNewName = new HashSet<>();
