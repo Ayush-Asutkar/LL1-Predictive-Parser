@@ -3,7 +3,7 @@ import model.ProductionRule;
 import java.util.*;
 
 public class Grammar {
-    private static final String EPSILON = String.valueOf('\u03B5');
+    protected static final String EPSILON = String.valueOf('\u03B5');
     private final List<ProductionRule> productionRules;
 
     //store the non-terminal symbols and terminal symbols
@@ -83,12 +83,19 @@ public class Grammar {
         this.addRule(leftSide, rightFinal);
     }
 
-    public void addAllFirstSet(String nonTerminal, Set<String> firstSet) {
-        if(this.firstSet.containsKey(nonTerminal)) {
-            this.firstSet.get(nonTerminal).addAll(firstSet);
+    public void addAllFirstSet(String symbol, Set<String> firstSet) {
+        if(this.firstSet.containsKey(symbol)) {
+            this.firstSet.get(symbol).addAll(firstSet);
         } else {
-            this.firstSet.put(nonTerminal, new HashSet<>(firstSet));
+            this.firstSet.put(symbol, new HashSet<>(firstSet));
         }
+    }
+
+    public Set<String> getFirstSet(String symbol) {
+        if (!this.firstSet.containsKey(symbol)) {
+            return null;
+        }
+        return Collections.unmodifiableSet(this.firstSet.get(symbol));
     }
 
     public void addAllFollowSet(String nonTerminal, Set<String> followSet) {
@@ -97,6 +104,14 @@ public class Grammar {
         } else {
             this.followSet.put(nonTerminal, new HashSet<>(followSet));
         }
+    }
+
+    public Set<String> getFollowSet(String symbol) {
+        if (!this.followSet.containsKey(symbol)) {
+            return null;
+        }
+
+        return Collections.unmodifiableSet(this.followSet.get(symbol));
     }
 
     /**
