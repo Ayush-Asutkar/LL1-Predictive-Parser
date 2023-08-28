@@ -6,6 +6,7 @@ import java.util.*;
 
 public class Grammar {
     protected static final String EPSILON = String.valueOf('\u03B5');
+    protected static final String END_OF_LINE_SYMBOL = "$";
 
     private String firstSymbol;
     private final List<ProductionRule> productionRules;
@@ -21,7 +22,7 @@ public class Grammar {
     public Grammar() {
         this.productionRules = new ArrayList<>();
         this.terminalSymbols = new HashSet<>();
-        this.terminalSymbols.add("$");
+        this.terminalSymbols.add(END_OF_LINE_SYMBOL);
         this.nonTerminalSymbols = new HashSet<>();
         this.firstSet = new HashMap<>();
         this.followSet = new HashMap<>();
@@ -38,40 +39,25 @@ public class Grammar {
     public List<ProductionRule> getProductionRules() {
         return Collections.unmodifiableList(productionRules);
     }
-
-    public Set<String> getTerminalSymbols() {
-        return Collections.unmodifiableSet(terminalSymbols);
-    }
-
-    public Set<String> getNonTerminalSymbols() {
-        return Collections.unmodifiableSet(nonTerminalSymbols);
-    }
-
-    public void addTerminalSymbol(String str) {
-        this.terminalSymbols.add(str);
-    }
-
-    public void addNonTerminalSymbol(String str) {
-        this.nonTerminalSymbols.add(str);
-    }
-
-    public boolean isTerminalSymbol(String str) {
-        return this.terminalSymbols.contains(str);
-    }
-
-    public boolean isNonTerminalSymbol(String str) {
-        return this.nonTerminalSymbols.contains(str);
-    }
-
-    public void addRule (String leftHandSide, Set<List<String>> rightHandSide) {
-        if (this.productionRules.contains(new ProductionRule(leftHandSide))) {
-            int index = this.productionRules.indexOf(new ProductionRule(leftHandSide));
-            ProductionRule newProductionRule = this.productionRules.get(index);
-            newProductionRule.addAllRightHandSide(rightHandSide);
+    
+    private ProductionRule getProductionRuleBasedOnNonTerminal(String symbol) {
+        if(this.productionRules.contains(new ProductionRule(symbol))) {
+            int index = this.productionRules.indexOf(new ProductionRule(symbol));
+            return this.productionRules.get(index);
         } else {
+            return null;
+        }
+    }
+    
+    public void addRule (String leftHandSide, Set<List<String>> rightHandSide) {
+        ProductionRule alreadyExistingProductionRule = this.getProductionRuleBasedOnNonTerminal(leftHandSide);
+        
+        if (alreadyExistingProductionRule == null) {
             ProductionRule newProductionRule = new ProductionRule(leftHandSide);
             newProductionRule.addAllRightHandSide(rightHandSide);
             this.productionRules.add(newProductionRule);
+        } else {
+            alreadyExistingProductionRule.addAllRightHandSide(rightHandSide);
         }
     }
 
@@ -103,11 +89,43 @@ public class Grammar {
         this.addRule(leftSide, rightFinal);
     }
 
-    public void addAllFirstSet(String symbol, Set<String> firstSet) {
-        if(this.firstSet.containsKey(symbol)) {
-            this.firstSet.get(symbol).addAll(firstSet);
+    public Set<String> getTerminalSymbols() {
+        return Collections.unmodifiableSet(terminalSymbols);
+    }
+    
+    public void addTerminalSymbol(String str) {
+        this.terminalSymbols.add(str);
+    }
+
+    public boolean isTerminalSymbol(String str) {
+        return this.terminalSymbols.contains(str);
+    }
+
+    public Set<String> getNonTerminalSymbols() {
+        return Collections.unmodifiableSet(nonTerminalSymbols);
+    }
+    
+    public void addNonTerminalSymbol(String str) {
+        this.nonTerminalSymbols.add(str);
+    }
+
+    public boolean isNonTerminalSymbol(String str) {
+        return this.nonTerminalSymbols.contains(str);
+    }
+    
+    public void addFirstSet(String symbol, String firstSetSymbol) {
+        if (this.firstSet.containsKey(symbol)) {
+            this.firstSet.get(symbol).add(firstSetSymbol);
         } else {
-            this.firstSet.put(symbol, new HashSet<>(firstSet));
+            Set<String> toAdd = new HashSet<>();
+            toAdd.add(firstSetSymbol);
+            this.firstSet.put(symbol, toAdd);
+        }
+    }
+
+    public void addAllFirstSet(String symbol, Set<String> firstSet) {
+        for(String first: firstSet) {
+            this.addFirstSet(symbol, first);
         }
     }
 
@@ -116,6 +134,65 @@ public class Grammar {
             return null;
         }
         return Collections.unmodifiableSet(this.firstSet.get(symbol));
+    }
+    
+    private void computeFirstSetForAllTerminalSymbols() {
+        for (String terminalSymbol: this.terminalSymbols) {
+            if(terminalSymbol.equals(END_OF_LINE_SYMBOL)) {
+                continue;
+            }
+            this.addFirstSet(terminalSymbol, terminalSymbol);
+        }
+    }
+    
+    private Set<String> computeFirstSetForParticularSymbol(String symbol) {
+        if (this.isTerminalSymbol(symbol)) {
+            Set<String> result = new HashSet<>();
+            result.add(symbol);
+            return result;
+        }
+        
+        ProductionRule productionRule = this.getProductionRuleBasedOnNonTerminal(symbol);
+        assert productionRule != null;
+        
+        Set<String> result = new HashSet<>();
+        for (List<String> rightSide: productionRule.getRightHandSide()) {
+            if(rightSide.get(0).equals(EPSILON)) {
+                result.add(EPSILON);
+            } else {
+                boolean toAddEpsilon = true;
+                for(String symbolForRightSide: rightSide) {
+                    Set<String> toAdd = new HashSet<>(this.computeFirstSetForParticularSymbol(symbolForRightSide));
+                    if(toAdd.contains(EPSILON)) {
+                        toAdd.remove(EPSILON);
+                        result.addAll(toAdd);
+                    } else {
+                        toAddEpsilon = false;
+                        result.addAll(toAdd);
+                        break;
+                    }
+                }
+                
+                if(toAddEpsilon) {
+                    result.add(EPSILON);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private void computeFirstSetForAllNonTerminalSymbols() {
+        for (String nonTerminal: this.nonTerminalSymbols) {
+            Set<String> toAdd = this.computeFirstSetForParticularSymbol(nonTerminal);
+            this.addAllFirstSet(nonTerminal, toAdd);
+        }
+    }
+    
+    public void computeFirstSetForAllSymbols() {
+        this.computeFirstSetForAllTerminalSymbols();
+        
+        this.computeFirstSetForAllNonTerminalSymbols();
     }
 
     public void addAllFollowSet(String nonTerminal, Set<String> followSet) {
@@ -467,13 +544,39 @@ public class Grammar {
 //        grammar.addRule("S -> a S S b S | a S a S b | a b b | b");
 //        grammar.addRule("S -> a | a b | a b c | a b c d");
 
-        grammar.addRule("S -> a A d | a B");
-        grammar.addRule("A -> a | a b");
-        grammar.addRule("B -> c c d | d d c");
-        grammar.printGrammar();
+//        grammar.addRule("S -> a A d | a B");
+//        grammar.addRule("A -> a | a b");
+//        grammar.addRule("B -> c c d | d d c");
+//        grammar.printGrammar();
+//
+//        System.out.println("After finding equivalent left factored grammar");
+//        grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
+//        grammar.printGrammar();
 
-        System.out.println("After finding equivalent left factored grammar");
-        grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
+
+        grammar.setFirstSymbol("E");
+
+        grammar.addTerminalSymbol("(");
+        grammar.addTerminalSymbol(")");
+        grammar.addTerminalSymbol("+");
+        grammar.addTerminalSymbol("*");
+        grammar.addTerminalSymbol("id");
+
+        grammar.addNonTerminalSymbol("E");
+        grammar.addNonTerminalSymbol("E'");
+        grammar.addNonTerminalSymbol("T");
+        grammar.addNonTerminalSymbol("T'");
+        grammar.addNonTerminalSymbol("F");
+
+        grammar.addRule("E -> T E'");
+        grammar.addRule("E' -> + T E' | ε");
+        grammar.addRule("T -> F T'");
+        grammar.addRule("T' -> * F T' | ε");
+        grammar.addRule("F -> ( E ) | id");
+
         grammar.printGrammar();
+        grammar.computeFirstSetForAllSymbols();
+
+        grammar.printFirstAndFollowSet();
     }
 }
