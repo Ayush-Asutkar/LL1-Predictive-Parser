@@ -1,3 +1,5 @@
+package grammar;
+
 import model.ProductionRule;
 
 import java.util.*;
