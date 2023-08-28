@@ -4,7 +4,7 @@ import java.util.*;
 
 public class PredictiveParserLL1Grammar extends Grammar {
     /**
-     * ArrayList(Non-Terminal, Map(Terminal, ProductionRule))
+     * Map(Non-Terminal, Map(Terminal, ProductionRule))
      */
     private final Map<String, Map<String, ProductionRule>> parsingTable;
 
