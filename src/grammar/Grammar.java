@@ -16,8 +16,8 @@ public class Grammar {
     private final Set<String> nonTerminalSymbols;
 
     //First set and follow set of all Non-Terminals
-    Map<String, Set<String>> firstSet;
-    Map<String, Set<String>> followSet;
+    private final Map<String, Set<String>> firstSet;
+    private final Map<String, Set<String>> followSet;
 
     public Grammar() {
         this.productionRules = new ArrayList<>();
@@ -97,6 +97,12 @@ public class Grammar {
         this.terminalSymbols.add(str);
     }
 
+    public void addAllTerminalSymbolFromIterator(Iterator<String> iterator) {
+        while(iterator.hasNext()) {
+            this.addTerminalSymbol(iterator.next());
+        }
+    }
+
     public boolean isTerminalSymbol(String str) {
         return this.terminalSymbols.contains(str);
     }
@@ -107,6 +113,12 @@ public class Grammar {
     
     public void addNonTerminalSymbol(String str) {
         this.nonTerminalSymbols.add(str);
+    }
+
+    public void addAllNonTerminalSymbolFromIterator(Iterator<String> iterator) {
+        while(iterator.hasNext()) {
+            this.addNonTerminalSymbol(iterator.next());
+        }
     }
 
     public boolean isNonTerminalSymbol(String str) {
