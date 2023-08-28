@@ -44,7 +44,7 @@ int main() {
     int token;
     while((token = yylex()) != 0) {
         yyout = fopen("output.txt", "a");
-        fprintf(yyout, "(%s, %s)\n", getNameFromToken(token), yytext);
+        fprintf(yyout, "%s, %s\n", getNameFromToken(token), yytext);
         fclose(yyout);
     }
 
