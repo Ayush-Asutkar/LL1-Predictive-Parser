@@ -11,15 +11,29 @@ import java.util.Scanner;
 public class Main {
     private static final Path homeDirectory = FileSystems.getDefault().getPath("").toAbsolutePath();
 
+    private static PredictiveParserLL1Grammar takeLL1GrammarInput() throws IOException {
+        String pathToInputGrammar = homeDirectory + "\\Input\\InputGrammar.txt";
+        return ReadingInput.readAndCreateLL1Grammar(pathToInputGrammar);
+    }
+
+    private static List<Token> takeFlexProgramTokenList(int grammarChoice) throws IOException {
+        String pathToFlexProgram = homeDirectory + "\\Flex\\Grammar" + grammarChoice + "\\output.txt";
+//            System.out.println("pathToFlexProgram: " + pathToFlexProgram);
+        return ReadingInput.readTokensGeneratedFromFlex(pathToFlexProgram);
+    }
+
     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Which grammar to apply on (1 or 2): ");
+        int grammarChoice = sc.nextInt();
+        sc.close();
+
+        assert grammarChoice == 1 || grammarChoice == 2;
 
         //take input the grammar
         PredictiveParserLL1Grammar grammar = null;
         try {
-            String pathToInputGrammar = homeDirectory + "\\Input\\InputGrammar.txt";
-            grammar = ReadingInput.readAndCreateLL1Grammar(pathToInputGrammar);
-            System.out.println("Input Grammar: ");
-            grammar.printGrammar();
+            grammar = takeLL1GrammarInput();
         } catch (IOException e) {
             System.out.println("Unable to read from grammar file");
             System.out.println(e.getMessage());
@@ -27,6 +41,10 @@ public class Main {
 
         //apply left recursion and left factoring
         assert grammar != null;
+
+        System.out.println("Input Grammar: ");
+        grammar.printGrammar();
+
         grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
         grammar.applyAlgorithmForRemovalOfLeftRecursion();
 
@@ -37,34 +55,24 @@ public class Main {
         grammar.computeFirstAndFollowForAllSymbols();
         grammar.printFirstAndFollowSet();
 
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Which grammar to apply on (1 or 2): ");
-        int grammarChoice = sc.nextInt();
-        sc.close();
-
-        assert grammarChoice == 1 || grammarChoice == 2;
-
         //Take the list of tokens from flex program
         List<Token> tokens = null;
         try {
-            String pathToFlexProgram = homeDirectory + "\\Flex\\Grammar" + grammarChoice + "\\output.txt";
-//            System.out.println("pathToFlexProgram: " + pathToFlexProgram);
-            tokens =  ReadingInput.readTokensGeneratedFromFlex(pathToFlexProgram);
+            tokens = takeFlexProgramTokenList(grammarChoice);
         } catch (IOException e) {
             System.out.println("Unable to read from Flex output file");
             System.out.println(e.getMessage());
         }
 
         assert tokens != null;
-        System.out.println(tokens);
-        PredictiveParserLL1Grammar predictiveParserLL1Grammar = (PredictiveParserLL1Grammar) grammar;
+//        System.out.println(tokens);
 
         //create parsing table
-        predictiveParserLL1Grammar.createParsingTable();
-        predictiveParserLL1Grammar.printParsingTable();
+        grammar.createParsingTable();
+        grammar.printParsingTable();
 
         //apply the parser
-        boolean parserAccepted = predictiveParserLL1Grammar.parser(tokens);
+        boolean parserAccepted = grammar.parser(tokens);
         if(parserAccepted) {
             System.out.println("The given input text is accepted");
         } else {
