@@ -4,6 +4,8 @@ import java.util.*;
 
 public class Grammar {
     protected static final String EPSILON = String.valueOf('\u03B5');
+
+    private String firstSymbol;
     private final List<ProductionRule> productionRules;
 
     //store the non-terminal symbols and terminal symbols
@@ -21,6 +23,14 @@ public class Grammar {
         this.nonTerminalSymbols = new HashSet<>();
         this.firstSet = new HashMap<>();
         this.followSet = new HashMap<>();
+    }
+
+    public String getFirstSymbol() {
+        return firstSymbol;
+    }
+
+    public void setFirstSymbol(String firstSymbol) {
+        this.firstSymbol = firstSymbol;
     }
 
     public List<ProductionRule> getProductionRules() {
