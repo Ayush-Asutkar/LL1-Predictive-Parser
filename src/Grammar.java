@@ -53,6 +53,14 @@ public class Grammar {
         this.nonTerminalSymbols.add(str);
     }
 
+    public boolean isTerminalSymbol(String str) {
+        return this.terminalSymbols.contains(str);
+    }
+
+    public boolean isNonTerminalSymbol(String str) {
+        return this.nonTerminalSymbols.contains(str);
+    }
+
     public void addRule (String leftHandSide, Set<List<String>> rightHandSide) {
         if (this.productionRules.contains(new ProductionRule(leftHandSide))) {
             int index = this.productionRules.indexOf(new ProductionRule(leftHandSide));

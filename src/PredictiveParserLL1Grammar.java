@@ -1,4 +1,5 @@
 import model.ProductionRule;
+import model.Token;
 
 import java.util.*;
 
@@ -103,21 +104,107 @@ public class PredictiveParserLL1Grammar extends Grammar {
             }
             System.out.println();
         }
+        System.out.println();
+    }
+
+    private ProductionRule getProductionRuleFromParsingTable(String nonTerminal, String terminal) {
+        return this.parsingTable.get(nonTerminal).get(terminal);
+    }
+
+    private String createStringFromTokenListGivenRangeInclusive(List<Token> tokens, int left, int right) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i=left; i<=right; i++) {
+            stringBuilder.append(tokens.get(i).getTokenName()).append(" ");
+        }
+        return stringBuilder.toString();
+    }
+
+    private enum Step {
+        PRODUCTION_RULE, MATCHED_INPUT
+    }
+
+    private void printStepForParser(Stack<String> stack, List<Token> tokens, int indexOnToken, ProductionRule productionRule, Step step) {
+        System.out.println("Following are the elements of stack: " + stack);
+
+        String matchedInput = this.createStringFromTokenListGivenRangeInclusive(tokens, 0, indexOnToken - 1);
+        System.out.println("Matched Input: " + matchedInput);
+
+//        System.out.println("indexOnToken: " + indexOnToken);
+        String remainingInput = this.createStringFromTokenListGivenRangeInclusive(tokens, indexOnToken, tokens.size()-1);
+        System.out.println("Remaining Input: " + remainingInput);
+
+        if (step == Step.PRODUCTION_RULE) {
+            System.out.println("Production Rule to apply: " + productionRule);
+        } else if (step == Step.MATCHED_INPUT) {
+            System.out.println("Matched for " + stack.peek());
+        }
+
+        System.out.println();
+    }
+
+    public boolean parser(List<Token> tokens) {
+        Stack<String> stack = new Stack<>();
+        stack.add("$");
+        stack.add(super.getFirstSymbol());
+
+        int indexOnToken = 0;
+        while(!stack.peek().equals("$")) {
+            String topElement = stack.peek();
+            if (super.isNonTerminalSymbol(topElement)) {
+                ProductionRule ruleToApply = this.getProductionRuleFromParsingTable(topElement, tokens.get(indexOnToken).getTokenName());
+                printStepForParser(stack, tokens, indexOnToken, ruleToApply, Step.PRODUCTION_RULE);
+
+                if (ruleToApply == null) {
+                    // There is error
+                    System.out.println("Error at parsing: " + tokens.get(indexOnToken));
+                    return false;
+                }
+
+                stack.pop();
+
+                Iterator<List<String>> iterator = ruleToApply.getRightHandSide().iterator();
+                List<String> rightSide = iterator.next();
+
+                for (int i=rightSide.size()-1; i>=0; i--) {
+                    if(rightSide.get(i).equals(EPSILON)) {
+                        continue;
+                    }
+                    stack.push(rightSide.get(i));
+                }
+            } else if (super.isTerminalSymbol(topElement)) {
+                if(topElement.equals(tokens.get(indexOnToken).getTokenName())) {
+                    printStepForParser(stack, tokens, indexOnToken, null, Step.MATCHED_INPUT);
+
+                    stack.pop();
+                    indexOnToken++;
+                } else {
+                    // Error, unmatched
+                    System.out.println("Could not be match: " + topElement + " with " + tokens.get(indexOnToken));
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static void main(String[] args) {
         PredictiveParserLL1Grammar predictiveParserLL1Grammar = new PredictiveParserLL1Grammar();
+
+        predictiveParserLL1Grammar.setFirstSymbol("E");
 
         predictiveParserLL1Grammar.addTerminalSymbol("(");
         predictiveParserLL1Grammar.addTerminalSymbol(")");
         predictiveParserLL1Grammar.addTerminalSymbol("+");
         predictiveParserLL1Grammar.addTerminalSymbol("*");
         predictiveParserLL1Grammar.addTerminalSymbol("id");
+
         predictiveParserLL1Grammar.addNonTerminalSymbol("E");
         predictiveParserLL1Grammar.addNonTerminalSymbol("E'");
         predictiveParserLL1Grammar.addNonTerminalSymbol("T");
         predictiveParserLL1Grammar.addNonTerminalSymbol("T'");
         predictiveParserLL1Grammar.addNonTerminalSymbol("F");
+
         predictiveParserLL1Grammar.addRule("E -> T E'");
         predictiveParserLL1Grammar.addRule("E' -> + T E' | ε");
         predictiveParserLL1Grammar.addRule("T -> F T'");
@@ -153,7 +240,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
 
         firstSet.clear();
         firstSet.add("id");
-        predictiveParserLL1Grammar.addAllFirstSet("id#", firstSet);
+        predictiveParserLL1Grammar.addAllFirstSet("id", firstSet);
 
         firstSet.clear();
         firstSet.add("+");
@@ -200,7 +287,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
         followSet.add(")");
         predictiveParserLL1Grammar.addAllFollowSet("F", followSet);
 
-        predictiveParserLL1Grammar.printFirstAndFollowSet();
+//        predictiveParserLL1Grammar.printFirstAndFollowSet();
 //        predictiveParserLL1Grammar.printGrammar();
         predictiveParserLL1Grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
 //        predictiveParserLL1Grammar.printGrammar();
@@ -210,5 +297,22 @@ public class PredictiveParserLL1Grammar extends Grammar {
         predictiveParserLL1Grammar.createParsingTable();
 
         predictiveParserLL1Grammar.printParsingTable();
+
+        List<Token> tokens = new ArrayList<>();
+        Token token = new Token("id", "id");
+        tokens.add(token);
+        token = new Token("+", "+");
+        tokens.add(token);
+        token = new Token("id", "id");
+        tokens.add(token);
+        token = new Token("*", "*");
+        tokens.add(token);
+        token = new Token("id", "id");
+        tokens.add(token);
+        token = new Token("$", "$");
+        tokens.add(token);
+
+        boolean parsed = predictiveParserLL1Grammar.parser(tokens);
+        System.out.println(parsed? "Accepted":"Rejected");
     }
 }
