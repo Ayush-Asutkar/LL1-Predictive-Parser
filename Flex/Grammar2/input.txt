@@ -1,14 +1,43 @@
-prog 
-    int alpha beta;
-    float gamma;
-    alpha := (4.2E18+304) * (alpha-beta/gamma);
-    if alpha>beta or beta<gamma and not gamma=alpha then
-        delta := chi;
-        print "tau&123"
-    else 
-        scan lambda
-    end 
-    while count > 5.2 do 
-        omega := omega+1;
-    end 
+prog
+    int i;
+    int j;
+    int sum;
+    int count;
+    float num;
+    int temp;
+
+    sum:=0;
+    count:=5;
+    scan count
+    print sum
+
+    if count=3 then
+        sum:=2;
+    else
+        if count < 4 then
+            sum:=2.3E-18;
+            if j < i then
+                num := 65.42E-90;
+            else
+                if j < sum then
+                    num := 56.7834;
+                    print "Ayush @#"
+                end
+
+                scan temp
+            end
+        end
+        while count>2.3 do
+            sum:=sum-1;
+        end
+    end
+
+    while sum > 0 do
+        count:=count+1;
+        i := 1.2345;
+
+        if count=3 then
+            sum:=2;
+        end
+    end
 end

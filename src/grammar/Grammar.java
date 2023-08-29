@@ -299,7 +299,7 @@ public class Grammar {
     }
 
     public void printGrammarToFile(String pathToDirectory, String note) throws IOException {
-        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "");
+        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "") + ".txt";
 //        System.out.println(pathToFile);
         BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFile));
         writer.write(note + "\n");
@@ -325,7 +325,7 @@ public class Grammar {
     }
 
     public void printFirstAndFollowSetToFile(String pathToDirectory, String note) throws IOException {
-        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "");
+        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "") + ".txt";
 //        System.out.println(pathToFile);
         BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFile));
         writer.write("Following is the first set:\n");

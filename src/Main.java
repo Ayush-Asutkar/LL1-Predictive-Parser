@@ -53,14 +53,19 @@ public class Main {
         grammar.printGrammarToFile(pathToOutputDirectory, note);
     }
 
-    private static void printFirstFollowSetToFile(PredictiveParserLL1Grammar grammar, String note) throws IOException {
+    private static void printFirstFollowSetToFile(PredictiveParserLL1Grammar grammar) throws IOException {
         String pathToOutputDirectory = homeDirectory + "\\Output";
-        grammar.printFirstAndFollowSetToFile(pathToOutputDirectory, note);
+        grammar.printFirstAndFollowSetToFile(pathToOutputDirectory, "First Follow Set");
     }
 
     private static void printParsingTableToFile(PredictiveParserLL1Grammar grammar) throws IOException {
-        String pathToOutputFile = homeDirectory + "\\Output\\ParsingTable";
+        String pathToOutputFile = homeDirectory + "\\Output\\ParsingTable.txt";
         grammar.printParsingTableToFile(pathToOutputFile);
+    }
+
+    private static void printParsingStepsToFile(PredictiveParserLL1Grammar grammar, boolean parserAccepted) throws IOException {
+        String pathToOutputFile = homeDirectory + "\\Output\\ParsingSteps.txt";
+        grammar.printParsingStepsToFile(pathToOutputFile, parserAccepted);
     }
 
     public static void main(String[] args) {
@@ -122,7 +127,7 @@ public class Main {
         grammar.printFirstAndFollowSet();
 
         try {
-            printFirstFollowSetToFile(grammar, "First Follow Set");
+            printFirstFollowSetToFile(grammar);
         } catch (IOException e) {
             System.out.println("Could not write First Follow Set to output file");
             System.out.println(e.getMessage());
@@ -153,10 +158,17 @@ public class Main {
 
         //apply the parser
         boolean parserAccepted = grammar.parser(tokens);
+        try {
+            printParsingStepsToFile(grammar, parserAccepted);
+        } catch (IOException e) {
+            System.out.println("Unable to write parser steps to output file");
+            System.out.println(e.getMessage());
+        }
+
         if(parserAccepted) {
-            System.out.println("The given input text is accepted");
+            System.out.println("The given input text is ACCEPTED");
         } else {
-            System.out.println("The given input text is not accepted");
+            System.out.println("The given input text is REJECTED");
         }
     }
 }

@@ -173,26 +173,47 @@ public class PredictiveParserLL1Grammar extends Grammar {
         PRODUCTION_RULE, MATCHED_INPUT
     }
 
+    private StringBuilder stringBuilderForOutputFile = null;
+
+    public void printParsingStepsToFile(String path, boolean accepted) throws IOException {
+        assert stringBuilderForOutputFile != null;
+
+        stringBuilderForOutputFile.append("The given text is ").append(accepted? "ACCEPTED\n" : "REJECTED\n");
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+        writer.write("Following are the parsing steps:\n");
+        writer.write(this.stringBuilderForOutputFile.toString());
+
+        writer.close();
+    }
+
     private void printStepForParser(Stack<String> stack, List<Token> tokens, int indexOnToken, ProductionRule productionRule, Step step) {
         System.out.println("Following are the elements of stack: " + stack);
+        this.stringBuilderForOutputFile.append("Following are the elements of stack: ").append(stack).append("\n");
 
         String matchedInput = this.createStringFromTokenListGivenRangeInclusive(tokens, 0, indexOnToken - 1);
         System.out.println("Matched Input: " + matchedInput);
+        this.stringBuilderForOutputFile.append("Matched Input: ").append(matchedInput).append("\n");
 
 //        System.out.println("indexOnToken: " + indexOnToken);
         String remainingInput = this.createStringFromTokenListGivenRangeInclusive(tokens, indexOnToken, tokens.size()-1);
         System.out.println("Remaining Input: " + remainingInput);
+        this.stringBuilderForOutputFile.append("Remaining Input: ").append(remainingInput).append("\n");
 
         if (step == Step.PRODUCTION_RULE) {
             System.out.println("Production Rule to apply: " + productionRule);
+            this.stringBuilderForOutputFile.append("Production Rule to apply: ").append(productionRule).append("\n");
         } else if (step == Step.MATCHED_INPUT) {
             System.out.println("Matched for " + stack.peek());
+            this.stringBuilderForOutputFile.append("Matched for ").append(stack.peek()).append("\n");
         }
 
         System.out.println();
+        this.stringBuilderForOutputFile.append("\n");
     }
 
     public boolean parser(List<Token> tokens) {
+        this.stringBuilderForOutputFile = new StringBuilder();
         Stack<String> stack = new Stack<>();
         stack.add("$");
         stack.add(super.getFirstSymbol());
@@ -207,6 +228,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
                 if (ruleToApply == null) {
                     // There is error
                     System.out.println("Error at parsing: " + tokens.get(indexOnToken));
+                    this.stringBuilderForOutputFile.append("Error at parsing: ").append(tokens.get(indexOnToken)).append("\n");
                     return false;
                 }
 
@@ -230,6 +252,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
                 } else {
                     // Error, unmatched
                     System.out.println("Could not be match: " + topElement + " with " + tokens.get(indexOnToken));
+                    this.stringBuilderForOutputFile.append("Could not be match: ").append(topElement).append(" with ").append(tokens.get(indexOnToken)).append("\n");
                     return false;
                 }
             }
