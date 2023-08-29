@@ -1,5 +1,6 @@
 import grammar.PredictiveParserLL1Grammar;
 import helperfunction.ReadingInput;
+import helperfunction.RunningLex;
 import model.Token;
 
 import java.io.File;
@@ -13,6 +14,12 @@ import java.util.Scanner;
 
 public class Main {
     private static final Path homeDirectory = FileSystems.getDefault().getPath("").toAbsolutePath();
+
+    private static void copyContentsFromInputTextToInput(int grammarChoice) throws IOException {
+        String sourceFilePath = homeDirectory + "\\Input\\InputText.txt";
+        String destinationFilePath = homeDirectory + "\\Flex\\Grammar" + grammarChoice + "\\input.txt";
+        RunningLex.copyContentForFlex(sourceFilePath, destinationFilePath);
+    }
 
     private static PredictiveParserLL1Grammar takeLL1GrammarInput() throws IOException {
         String pathToInputGrammar = homeDirectory + "\\Input\\InputGrammar.txt";
@@ -86,89 +93,97 @@ public class Main {
 
         assert grammarChoice == 1 || grammarChoice == 2;
 
-        //take input the grammar
-        PredictiveParserLL1Grammar grammar = null;
+
+        //read text from Input/InputText.txt to particular flex input
         try {
-            grammar = takeLL1GrammarInput();
+            copyContentsFromInputTextToInput(grammarChoice);
         } catch (IOException e) {
-            System.out.println("Unable to read from grammar file");
-            System.out.println(e.getMessage());
+            System.out.println("Could not copy contents of file InputText to particular flex input");
         }
 
-        assert grammar != null;
-
-        System.out.println("Input Grammar: ");
-        grammar.printGrammar();
-
-        try {
-            printGrammarWithNoteToFile(grammar, "Input Grammar");
-        } catch (IOException e) {
-            System.out.println("Could not write input grammar to output file");
-            System.out.println(e.getMessage());
-        }
-
-
-        grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
-        grammar.applyAlgorithmForRemovalOfLeftRecursion();
-
-        System.out.println("After finding equivalent left factored and removing of left recursion: ");
-        grammar.printGrammar();
-
-
-        try {
-            printGrammarWithNoteToFile(grammar, "Equivalent Left Factored and Removing Left Recursion Grammar");
-        } catch (IOException e) {
-            System.out.println("Could not write Equivalent Left Factored and Removing Left Recursion grammar to output file");
-            System.out.println(e.getMessage());
-        }
-
-        //compute the first and follow set
-        grammar.computeFirstAndFollowForAllSymbols();
-        grammar.printFirstAndFollowSet();
-
-        try {
-            printFirstFollowSetToFile(grammar);
-        } catch (IOException e) {
-            System.out.println("Could not write First Follow Set to output file");
-            System.out.println(e.getMessage());
-        }
-
-        //Take the list of tokens from flex program
-        List<Token> tokens = null;
-        try {
-            tokens = takeFlexProgramTokenList(grammarChoice);
-        } catch (IOException e) {
-            System.out.println("Unable to read from Flex output file");
-            System.out.println(e.getMessage());
-        }
-
-        assert tokens != null;
-//        System.out.println(tokens);
-
-        //create parsing table
-        grammar.createParsingTable();
-        grammar.printParsingTable();
-
-        try {
-            printParsingTableToFile(grammar);
-        } catch (IOException e) {
-            System.out.println("Could not write parsing table to output file");
-            System.out.println(e.getMessage());
-        }
-
-        //apply the parser
-        boolean parserAccepted = grammar.parser(tokens);
-        try {
-            printParsingStepsToFile(grammar, parserAccepted);
-        } catch (IOException e) {
-            System.out.println("Unable to write parser steps to output file");
-            System.out.println(e.getMessage());
-        }
-
-        if(parserAccepted) {
-            System.out.println("The given input text is ACCEPTED");
-        } else {
-            System.out.println("The given input text is REJECTED");
-        }
+//        //take input the grammar
+//        PredictiveParserLL1Grammar grammar = null;
+//        try {
+//            grammar = takeLL1GrammarInput();
+//        } catch (IOException e) {
+//            System.out.println("Unable to read from grammar file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        assert grammar != null;
+//
+//        System.out.println("Input Grammar: ");
+//        grammar.printGrammar();
+//
+//        try {
+//            printGrammarWithNoteToFile(grammar, "Input Grammar");
+//        } catch (IOException e) {
+//            System.out.println("Could not write input grammar to output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//
+//        grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
+//        grammar.applyAlgorithmForRemovalOfLeftRecursion();
+//
+//        System.out.println("After finding equivalent left factored and removing of left recursion: ");
+//        grammar.printGrammar();
+//
+//
+//        try {
+//            printGrammarWithNoteToFile(grammar, "Equivalent Left Factored and Removing Left Recursion Grammar");
+//        } catch (IOException e) {
+//            System.out.println("Could not write Equivalent Left Factored and Removing Left Recursion grammar to output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        //compute the first and follow set
+//        grammar.computeFirstAndFollowForAllSymbols();
+//        grammar.printFirstAndFollowSet();
+//
+//        try {
+//            printFirstFollowSetToFile(grammar);
+//        } catch (IOException e) {
+//            System.out.println("Could not write First Follow Set to output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        //Take the list of tokens from flex program
+//        List<Token> tokens = null;
+//        try {
+//            tokens = takeFlexProgramTokenList(grammarChoice);
+//        } catch (IOException e) {
+//            System.out.println("Unable to read from Flex output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        assert tokens != null;
+////        System.out.println(tokens);
+//
+//        //create parsing table
+//        grammar.createParsingTable();
+//        grammar.printParsingTable();
+//
+//        try {
+//            printParsingTableToFile(grammar);
+//        } catch (IOException e) {
+//            System.out.println("Could not write parsing table to output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        //apply the parser
+//        boolean parserAccepted = grammar.parser(tokens);
+//        try {
+//            printParsingStepsToFile(grammar, parserAccepted);
+//        } catch (IOException e) {
+//            System.out.println("Unable to write parser steps to output file");
+//            System.out.println(e.getMessage());
+//        }
+//
+//        if(parserAccepted) {
+//            System.out.println("The given input text is ACCEPTED");
+//        } else {
+//            System.out.println("The given input text is REJECTED");
+//        }
     }
 }

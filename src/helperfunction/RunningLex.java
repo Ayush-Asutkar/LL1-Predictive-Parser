@@ -1,17 +1,45 @@
 package helperfunction;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 
 public class RunningLex {
-    public static void runFlexBasedCommands () {
-//        File dir = new File("./");
-        Path currentRelativePath = Paths.get("");
-        String s = currentRelativePath.toAbsolutePath().toString();
-        System.out.println("Path: " + s);
+    private static String readFromAllFromFile(String path) throws IOException {
+        File file = new File(path);
+
+        BufferedReader br = new BufferedReader(new FileReader(file));
+
+        StringBuilder result = new StringBuilder();
+        String st;
+        while((st = br.readLine()) != null) {
+            result.append(st).append("\n");
+        }
+
+        return result.toString();
     }
 
-    public static void main(String[] args) {
-        runFlexBasedCommands();
+    private static void writeToAFile(String path, String content) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+
+        writer.write(content);
+
+        writer.close();
+    }
+    public static void copyContentForFlex(String sourceFilePath, String destinationFilePath) throws IOException {
+        String content;
+        try {
+            content = readFromAllFromFile(sourceFilePath);
+        } catch (IOException e) {
+            System.out.println("Could not read from input text");
+            System.out.println(e.getMessage());
+            throw new IOException("Could not read from " + sourceFilePath);
+        }
+
+        try {
+            writeToAFile(destinationFilePath, content);
+        } catch (IOException e) {
+            System.out.println("Could write to particular flex input");
+            System.out.println(e.getMessage());
+            throw new IOException("Could not write to " + destinationFilePath);
+        }
     }
 }
