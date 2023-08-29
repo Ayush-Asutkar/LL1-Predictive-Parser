@@ -2,6 +2,9 @@ package grammar;
 
 import model.ProductionRule;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class Grammar {
@@ -287,12 +290,54 @@ public class Grammar {
      */
     public void printGrammar() {
         System.out.println("Following is the set of terminal symbols: " + this.terminalSymbols.toString());
-        System.out.println("Following is the set of non-terminal symbols: " + this.nonTerminalSymbols);
+        System.out.println("Following is the set of non-terminal symbols: " + this.nonTerminalSymbols.toString());
         System.out.println("Following are the rules in the given grammar:");
         for (ProductionRule productionRule: this.productionRules) {
             System.out.println(productionRule);
         }
         System.out.println();
+    }
+
+    public void printGrammarToFile(String pathToDirectory, String note) throws IOException {
+        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "");
+//        System.out.println(pathToFile);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFile));
+        writer.write(note + "\n");
+        writer.write("Following is the set of terminal symbols:" + this.terminalSymbols.toString() + "\n");
+        writer.write("Following is the set of non-terminal symbols: " + this.nonTerminalSymbols.toString() + "\n");
+        writer.write("Following are the rules in the given grammar: \n");
+        for (ProductionRule productionRule: this.productionRules) {
+            writer.write(productionRule.toString() + "\n");
+        }
+        writer.close();
+    }
+
+    public void printFirstAndFollowSet() {
+        System.out.println("Following is the first set:");
+        for(Map.Entry<String, Set<String>> elem: firstSet.entrySet()) {
+            System.out.println(elem.getKey() + " => " + elem.getValue());
+        }
+
+        System.out.println("Following is the follow set:");
+        for(Map.Entry<String, Set<String>> elem: followSet.entrySet()) {
+            System.out.println(elem.getKey() + " => " + elem.getValue());
+        }
+    }
+
+    public void printFirstAndFollowSetToFile(String pathToDirectory, String note) throws IOException {
+        String pathToFile = pathToDirectory + "\\" + note.replace(" ", "");
+//        System.out.println(pathToFile);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(pathToFile));
+        writer.write("Following is the first set:\n");
+        for(Map.Entry<String, Set<String>> elem: firstSet.entrySet()) {
+            writer.write(elem.getKey() + " => " + elem.getValue() + "\n");
+        }
+
+        writer.write("\nFollowing is the follow set:\n");
+        for(Map.Entry<String, Set<String>> elem: followSet.entrySet()) {
+            writer.write(elem.getKey() + " => " + elem.getValue() + "\n");
+        }
+        writer.close();
     }
 
     private String findNewName(String leftHandSide) {
@@ -310,18 +355,6 @@ public class Grammar {
         }
 
         return newName;
-    }
-
-    public void printFirstAndFollowSet() {
-        System.out.println("Following is the first set:");
-        for(Map.Entry<String, Set<String>> elem: firstSet.entrySet()) {
-            System.out.println(elem.getKey() + " => " + elem.getValue());
-        }
-
-        System.out.println("Following is the follow set:");
-        for(Map.Entry<String, Set<String>> elem: followSet.entrySet()) {
-            System.out.println(elem.getKey() + " => " + elem.getValue());
-        }
     }
 
     private void solveNonImmediateLR(ProductionRule first, ProductionRule second) {

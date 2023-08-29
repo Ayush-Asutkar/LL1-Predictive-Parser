@@ -3,6 +3,9 @@ package grammar;
 import model.ProductionRule;
 import model.Token;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class PredictiveParserLL1Grammar extends Grammar {
@@ -91,22 +94,67 @@ public class PredictiveParserLL1Grammar extends Grammar {
         }
     }
 
+    private int findLengthOfRule(ProductionRule rule) {
+        if(rule == null) {
+            return 4;
+        }
+        return rule.toString().length();
+    }
+
+    private int findLengthOfMaxRuleInTable() {
+        int length = Integer.MIN_VALUE;
+        for(String nonTerminal: super.getNonTerminalSymbols()) {
+            for(String terminal: super.getTerminalSymbols()) {
+                length = Math.max(length, findLengthOfRule(this.parsingTable.get(nonTerminal).get(terminal)));
+            }
+        }
+        return length;
+    }
+
     public void printParsingTable() {
         System.out.println("This is the parsing table: ");
 
+        int lengthOfMaxRuleInTable = findLengthOfMaxRuleInTable() + 5; //5 is buffer
+
         // print header for non-terminal
         for (String terminal: super.getTerminalSymbols()) {
-            System.out.format("%25s", terminal);
+            System.out.format("%" + lengthOfMaxRuleInTable + "s", terminal);
         }
         System.out.println();
         for (String nonTerminal: super.getNonTerminalSymbols()) {
             System.out.print(nonTerminal);
             for (String terminal: super.getTerminalSymbols()) {
-                System.out.format("%25s", this.parsingTable.get(nonTerminal).get(terminal));
+                System.out.format("%" + lengthOfMaxRuleInTable + "s", this.parsingTable.get(nonTerminal).get(terminal));
             }
             System.out.println();
         }
         System.out.println();
+    }
+
+    public void printParsingTableToFile(String path) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
+        writer.write("Following is the parsing table:\n");
+
+        int lengthOfMaxRuleInTable = findLengthOfMaxRuleInTable() + 5; //5 is buffer
+
+        //print header for non-terminal
+        StringBuilder stringBuilder = new StringBuilder();
+        for(String terminal: super.getTerminalSymbols()) {
+            stringBuilder.append(String.format("%" + lengthOfMaxRuleInTable + "s", terminal));
+        }
+        stringBuilder.append("\n");
+
+        writer.write(stringBuilder.toString());
+
+        for(String nonTerminal: super.getNonTerminalSymbols()) {
+            StringBuilder ruleLine = new StringBuilder(nonTerminal);
+            for(String terminal: super.getTerminalSymbols()) {
+                ruleLine.append(String.format("%" + lengthOfMaxRuleInTable + "s", this.parsingTable.get(nonTerminal).get(terminal)));
+            }
+            ruleLine.append("\n");
+            writer.write(ruleLine.toString());
+        }
+        writer.write("\n");
     }
 
     private ProductionRule getProductionRuleFromParsingTable(String nonTerminal, String terminal) {

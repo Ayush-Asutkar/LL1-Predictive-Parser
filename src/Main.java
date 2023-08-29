@@ -2,9 +2,12 @@ import grammar.PredictiveParserLL1Grammar;
 import helperfunction.ReadingInput;
 import model.Token;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,7 +25,55 @@ public class Main {
         return ReadingInput.readTokensGeneratedFromFlex(pathToFlexProgram);
     }
 
+    private static void deleteOutputDirectory () throws IOException {
+        Path path = Path.of(homeDirectory + "\\Output");
+//        System.out.println("path: " + path);
+
+        Files.walk(path)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+
+        assert Files.exists(path);
+
+    }
+
+    private static void createOutputDirectory() throws IOException {
+        try {
+            deleteOutputDirectory();
+        } catch (IOException e) {
+//            System.out.println("Output file does not exist yet");
+        }
+        Path outputDirectoryPath = Path.of(homeDirectory + "\\Output");
+        Files.createDirectory(outputDirectoryPath);
+    }
+
+    private static void printGrammarWithNoteToFile(PredictiveParserLL1Grammar grammar, String note) throws IOException {
+        String pathToOutputDirectory = homeDirectory + "\\Output";
+        grammar.printGrammarToFile(pathToOutputDirectory, note);
+    }
+
+    private static void printFirstFollowSetToFile(PredictiveParserLL1Grammar grammar, String note) throws IOException {
+        String pathToOutputDirectory = homeDirectory + "\\Output";
+        grammar.printFirstAndFollowSetToFile(pathToOutputDirectory, note);
+    }
+
+    private static void printParsingTableToFile(PredictiveParserLL1Grammar grammar) throws IOException {
+        String pathToOutputFile = homeDirectory + "\\Output\\ParsingTable";
+        grammar.printParsingTableToFile(pathToOutputFile);
+    }
+
     public static void main(String[] args) {
+
+        //create empty output directory
+        try {
+            createOutputDirectory();
+        } catch (IOException e) {
+            System.out.println("Could not create output file");
+            System.out.println(e.getMessage());
+        }
+
+
         Scanner sc = new Scanner(System.in);
         System.out.print("Which grammar to apply on (1 or 2): ");
         int grammarChoice = sc.nextInt();
@@ -39,11 +90,18 @@ public class Main {
             System.out.println(e.getMessage());
         }
 
-        //apply left recursion and left factoring
         assert grammar != null;
 
         System.out.println("Input Grammar: ");
         grammar.printGrammar();
+
+        try {
+            printGrammarWithNoteToFile(grammar, "Input Grammar");
+        } catch (IOException e) {
+            System.out.println("Could not write input grammar to output file");
+            System.out.println(e.getMessage());
+        }
+
 
         grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
         grammar.applyAlgorithmForRemovalOfLeftRecursion();
@@ -51,9 +109,24 @@ public class Main {
         System.out.println("After finding equivalent left factored and removing of left recursion: ");
         grammar.printGrammar();
 
+
+        try {
+            printGrammarWithNoteToFile(grammar, "Equivalent Left Factored and Removing Left Recursion Grammar");
+        } catch (IOException e) {
+            System.out.println("Could not write Equivalent Left Factored and Removing Left Recursion grammar to output file");
+            System.out.println(e.getMessage());
+        }
+
         //compute the first and follow set
         grammar.computeFirstAndFollowForAllSymbols();
         grammar.printFirstAndFollowSet();
+
+        try {
+            printFirstFollowSetToFile(grammar, "First Follow Set");
+        } catch (IOException e) {
+            System.out.println("Could not write First Follow Set to output file");
+            System.out.println(e.getMessage());
+        }
 
         //Take the list of tokens from flex program
         List<Token> tokens = null;
@@ -71,12 +144,19 @@ public class Main {
         grammar.createParsingTable();
         grammar.printParsingTable();
 
+        try {
+            printParsingTableToFile(grammar);
+        } catch (IOException e) {
+            System.out.println("Could not write parsing table to output file");
+            System.out.println(e.getMessage());
+        }
+
         //apply the parser
         boolean parserAccepted = grammar.parser(tokens);
         if(parserAccepted) {
             System.out.println("The given input text is accepted");
         } else {
-            System.out.println("The given output text is not accepted");
+            System.out.println("The given input text is not accepted");
         }
     }
 }
