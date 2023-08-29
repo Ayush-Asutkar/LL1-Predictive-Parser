@@ -31,3 +31,6 @@ bin/
 #Flex output files
 /Flex/**/output.*
 /Flex/**/lex.yy.c
+
+#output
+/Output
