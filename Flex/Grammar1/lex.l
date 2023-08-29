@@ -13,12 +13,14 @@
 n n
 plus [+]
 star [*]
+delimiter [ \t\n]
 
 /*Rules section*/
 %%
 {n}     return N;
 {plus}  return PLUS;
 {star}  return STAR;
+{delimiter} {}
 .       return ERROR;
 %%
 
