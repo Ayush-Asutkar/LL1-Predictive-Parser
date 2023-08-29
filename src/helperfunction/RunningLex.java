@@ -24,14 +24,14 @@ public class RunningLex {
 
         writer.close();
     }
-    public static void copyContentForFlex(String sourceFilePath, String destinationFilePath) throws IOException {
+    public static void copyContentForFlex(String sourceFilePath, String destinationFilePath) throws RuntimeException {
         String content;
         try {
             content = readFromAllFromFile(sourceFilePath);
         } catch (IOException e) {
             System.out.println("Could not read from input text");
             System.out.println(e.getMessage());
-            throw new IOException("Could not read from " + sourceFilePath);
+            throw new RuntimeException("Could not read from " + sourceFilePath);
         }
 
         try {
@@ -39,7 +39,57 @@ public class RunningLex {
         } catch (IOException e) {
             System.out.println("Could write to particular flex input");
             System.out.println(e.getMessage());
-            throw new IOException("Could not write to " + destinationFilePath);
+            throw new RuntimeException("Could not write to " + destinationFilePath);
+        }
+    }
+
+    private static void runOnCommandLine(String pathToDirectory, String command) throws IOException, InterruptedException {
+        Process process = Runtime.getRuntime().exec(command, null, new File(pathToDirectory));
+        int exitCode = process.waitFor();
+        System.out.println("Command executed with exit code: " + exitCode);
+    }
+
+    private static void compileFlex(String pathToDirectory) throws IOException, InterruptedException {
+        String command = "flex lex.l";
+        runOnCommandLine(pathToDirectory, command);
+    }
+
+    private static void compileLexCProgram(String pathToDirectory) throws IOException, InterruptedException {
+        String command = "gcc lex.yy.c -o output";
+        runOnCommandLine(pathToDirectory, command);
+    }
+
+    private static void runOutputFile(String pathToDirectory) throws IOException, InterruptedException {
+        String command = pathToDirectory + "\\output";
+        runOnCommandLine(pathToDirectory, command);
+    }
+
+    public static void compileAndRunFlex(String pathToDirectory) throws RuntimeException {
+        // compile the flex program
+        try {
+            compileFlex(pathToDirectory);
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Could not compile flex program");
+            System.out.println(e.getMessage());
+            throw new RuntimeException("Could not compile flex program");
+        }
+
+        //compile the lex.yy.c
+        try {
+            compileLexCProgram(pathToDirectory);
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Could not compile the lex.yy.c program");
+            System.out.println(e.getMessage());
+            throw new RuntimeException("Could not compile lex.yy.c");
+        }
+
+        //run the output.exe
+        try {
+            runOutputFile(pathToDirectory);
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Could not run output.exe program");
+            System.out.println(e.getMessage());
+            throw new RuntimeException("Could not run output.exe");
         }
     }
 }
