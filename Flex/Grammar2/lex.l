@@ -35,6 +35,10 @@
     #define STR         29
     #define THEN        30
     #define WHILE       31
+
+    /*Variable to keep the track of line number and index*/
+    int lineNumber = 1;
+    int indexInLine = 1;
 %}
 
 /*Tokens definition*/
@@ -76,38 +80,138 @@ delimiter       [ \t\n]
 
 /*Rules section*/
 %%
-{and}       return AND;
-{else}      return ELSE;
-{end}       return END;
-{if}        return IF;
-{int}       return INT;
-{do}        return DO;
-{float}     return FLOAT;
-{not}       return NOT;
-{or}        return OR;
-{print}     return PRINT;
-{prog}      return PROG;
-{scan}      return SCAN;
-{then}      return THEN;
-{while}     return WHILE;
-{plus}      return PLUS;
-{minus}     return MINUS;
-{mult}      return MULT;
-{divide}    return DIVIDE;
-{equal}     return EQUAL;
-{lessthan}  return LESSTHAN;
-{greaterthan} return GREATERTHAN;
-{openpara}  return OPENPARA;
-{closepara} return CLOSEPARA;
-{opencurly} return OPENCURLY;
-{closecurly}    return CLOSECURLY;
-{assign}    return ASSIGN;
-{semicolon} return SEMICOLON;
-{intconst}  return INTCONST;
-{identifier}    return IDENTIFIER;
-{floatconst} return FLOATCONST;
-{str}       return STR;
-{delimiter} {}
+{and}       {
+    indexInLine += yyleng;
+    return AND;
+}
+{else}      {
+    indexInLine += yyleng;
+    return ELSE;
+}
+{end}       {
+    indexInLine += yyleng;
+    return END;
+}
+{if}        {
+    indexInLine += yyleng;
+    return IF;
+}
+{int}       {
+    indexInLine += yyleng;
+    return INT;
+}
+{do}        {
+    indexInLine += yyleng;
+    return DO;
+}
+{float}     {
+    indexInLine += yyleng;
+    return FLOAT;
+}
+{not}       {
+    indexInLine += yyleng;
+    return NOT;
+}
+{or}        {
+    indexInLine += yyleng;
+    return OR;
+}
+{print}     {
+    indexInLine += yyleng;
+    return PRINT;
+}
+{prog}      {
+    indexInLine += yyleng;
+    return PROG;
+}
+{scan}      {
+    indexInLine += yyleng;
+    return SCAN;
+}
+{then}      {
+    indexInLine += yyleng;
+    return THEN;
+}
+{while}     {
+    indexInLine += yyleng;
+    return WHILE;
+}
+{plus}      {
+    indexInLine += yyleng;
+    return PLUS;
+}
+{minus}     {
+    indexInLine += yyleng;
+    return MINUS;
+}
+{mult}      {
+    indexInLine += yyleng;
+    return MULT;
+}
+{divide}    {
+    indexInLine += yyleng;
+    return DIVIDE;
+}
+{equal}     {
+    indexInLine += yyleng;
+    return EQUAL;
+}
+{lessthan}  {
+    indexInLine += yyleng;
+    return LESSTHAN;
+}
+{greaterthan} {
+    indexInLine += yyleng;
+    return GREATERTHAN;
+}
+{openpara}  {
+    indexInLine += yyleng;
+    return OPENPARA;
+}
+{closepara} {
+    indexInLine += yyleng;
+    return CLOSEPARA;
+}
+{opencurly} {
+    indexInLine += yyleng;
+    return OPENCURLY;
+}
+{closecurly}    {
+    indexInLine += yyleng;
+    return CLOSECURLY;
+}
+{assign}    {
+    indexInLine += yyleng;
+    return ASSIGN;
+}
+{semicolon} {
+    indexInLine += yyleng;
+    return SEMICOLON;
+}
+{intconst}  {
+    indexInLine += yyleng;
+    return INTCONST;
+}
+{identifier}    {
+    indexInLine += yyleng;
+    return IDENTIFIER;
+}
+{floatconst} {
+    indexInLine += yyleng;
+    return FLOATCONST;
+}
+{str}       {
+    indexInLine += yyleng;
+    return STR;
+}
+{delimiter} {
+    if (*yytext == '\n') {
+        lineNumber++;
+        indexInLine = 1;
+    } else {
+        indexInLine += yyleng;
+    }
+}
 .           return ERROR;
 %%
 
@@ -217,7 +321,7 @@ int main() {
     int token;
     while((token = yylex()) != 0) {
         yyout = fopen("output.txt", "a");
-        fprintf(yyout, "%s, %s\n", getNameFromToken(token), yytext);
+        fprintf(yyout, "%s, %s, %d, %d\n", getNameFromToken(token), yytext, lineNumber, indexInLine);
         fclose(yyout);
     }
 

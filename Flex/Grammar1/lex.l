@@ -7,6 +7,10 @@
     #define N 1
     #define PLUS 2
     #define STAR 3
+
+    /*Variable to keep the track of line number and index*/
+    int lineNumber = 1;
+    int indexInLine = 1;
 %}
 
 /*Tokens definition*/
@@ -17,10 +21,26 @@ delimiter [ \t\n]
 
 /*Rules section*/
 %%
-{n}     return N;
-{plus}  return PLUS;
-{star}  return STAR;
-{delimiter} {}
+{n}     {
+    indexInLine += yyleng;
+    return N;
+}
+{plus}  {
+    indexInLine += yyleng;
+    return PLUS;
+}
+{star}  {
+    indexInLine += yyleng;
+    return STAR;
+}
+{delimiter} {
+    if (*yytext == '\n') {
+        lineNumber++;
+        indexInLine = 1;
+    } else {
+        indexInLine += yyleng;
+    }
+}
 .       return ERROR;
 %%
 
@@ -46,7 +66,7 @@ int main() {
     int token;
     while((token = yylex()) != 0) {
         yyout = fopen("output.txt", "a");
-        fprintf(yyout, "%s, %s\n", getNameFromToken(token), yytext);
+        fprintf(yyout, "%s, %s, %d, %d\n", getNameFromToken(token), yytext, lineNumber, indexInLine);
         fclose(yyout);
     }
 
