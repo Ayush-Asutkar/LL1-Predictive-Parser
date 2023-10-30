@@ -10,7 +10,7 @@
 
     /*Variable to keep the track of line number and index*/
     int lineNumber = 1;
-    int indexInLine = 1;
+    int indexInLine = 0;
 %}
 
 /*Tokens definition*/
@@ -22,21 +22,18 @@ delimiter [ \t\n]
 /*Rules section*/
 %%
 {n}     {
-    indexInLine += yyleng;
     return N;
 }
 {plus}  {
-    indexInLine += yyleng;
     return PLUS;
 }
 {star}  {
-    indexInLine += yyleng;
     return STAR;
 }
 {delimiter} {
     if (*yytext == '\n') {
         lineNumber++;
-        indexInLine = 1;
+        indexInLine = 0;
     } else {
         indexInLine += yyleng;
     }
@@ -67,6 +64,7 @@ int main() {
     while((token = yylex()) != 0) {
         yyout = fopen("output.txt", "a");
         fprintf(yyout, "%s, %s, %d, %d\n", getNameFromToken(token), yytext, lineNumber, indexInLine);
+        indexInLine += yyleng;
         fclose(yyout);
     }
 
