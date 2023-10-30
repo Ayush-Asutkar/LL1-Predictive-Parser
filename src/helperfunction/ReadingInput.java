@@ -2,6 +2,7 @@ package helperfunction;
 
 import grammar.PredictiveParserLL1Grammar;
 import model.Token;
+import model.TokenBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,13 +29,27 @@ public class ReadingInput {
             }
 
             String[] splitedString = st.split(",");
+            assert splitedString.length == 4;
+
             String tokenName = splitedString[0].trim();
             String value = splitedString[1].trim();
-            Token newToken = new Token(tokenName, value);
+            int lineNumber = Integer.parseInt(splitedString[2].trim());
+            int indexInLine = Integer.parseInt(splitedString[3].trim());
+            Token newToken = new TokenBuilder()
+                    .setTokenName(tokenName)
+                    .setValue(value)
+                    .setLineNumber(lineNumber)
+                    .setIndexInLine(indexInLine)
+                    .buildToken();
             result.add(newToken);
         }
 
-        Token lastToken = new Token("$", "$");
+        Token lastToken = new TokenBuilder()
+                .setTokenName("$")
+                .setValue("$")
+                .setLineNumber(result.get(result.size() - 1).getLineNumber() + 1)
+                .setIndexInLine(0)
+                .buildToken();
         result.add(lastToken);
 
         return result;
