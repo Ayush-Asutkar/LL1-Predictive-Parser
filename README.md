@@ -20,13 +20,13 @@
 
 ## Problem Statement
 For each of the grammars, perform the following steps and implement a predictive LL(1) parser.
-1. Transform the given grammar to LL(1).
+1. Transform the given baseGrammar to LL(1).
 
     <details>
     <summary>Details:</summary>
 
-    <p>Transform the grammar to LL(1) (without affecting/changing the language) by (removing of left-recursing, and 
-    making the grammar left-factored. Write a LL(1) grammar in a output file.</p>
+    <p>Transform the baseGrammar to LL(1) (without affecting/changing the language) by (removing of left-recursing, and 
+    making the baseGrammar left-factored. Write a LL(1) baseGrammar in a output file.</p>
 
     </details>
    
@@ -34,7 +34,7 @@ For each of the grammars, perform the following steps and implement a predictive
     <details>
     <summary>Details:</summary>
     
-    <p>For the LL(1) grammar obtains from step1, compute the FIRST set of all symbols in the grammar, and also compute
+    <p>For the LL(1) baseGrammar obtains from step1, compute the FIRST set of all symbols in the baseGrammar, and also compute
     the FOLLOW set for all non-terminals. Store this information in another file.</p>
     
     </details>
@@ -57,7 +57,7 @@ For each of the grammars, perform the following steps and implement a predictive
    <p>The left hand side and right side should be separated by ->. The right hand side rules should be separated by |. And for each rule, the symbols should be space separated</p>
 
    <details>
-   <summary>Example input grammar</summary>
+   <summary>Example input baseGrammar</summary>
 
    <p>P</p>
    <p>AE BE D DL E F ES IOS IS NE P PE RE S SL T TY VL WS</p>
@@ -85,7 +85,7 @@ For each of the grammars, perform the following steps and implement a predictive
    </details>
    
 
-<p>NOTE: The input grammar should be written <a href="Input/InputGrammar.txt">here</a> and the input text <a href="Input/InputText.txt">here</a>.</p>
+<p>NOTE: The input baseGrammar should be written <a href="Input/InputGrammar.txt">here</a> and the input text <a href="Input/InputText.txt">here</a>.</p>
 
 ## Understanding the codebase
 <p>The project consists of many folders, lets walk through one after another.</p>
@@ -113,24 +113,24 @@ For each of the grammars, perform the following steps and implement a predictive
 <p>Check the Main.java file to understand the flow. Following are the steps:</p>
 
 1. Create empty output directory.
-2. Take in the grammar choice which needs to be run, currently there are two grammar choices 1 and 2.
+2. Take in the baseGrammar choice which needs to be run, currently there are two baseGrammar choices 1 and 2.
 3. Read the text from InputText.txt and feed it the lex program.
 4. Compile and run the flex program.
-5. Take the input grammar from "InputGrammar.txt".
-6. Print the input grammar to output file.
-7. Make the grammar as LL(1), apply algorithm for producing an equivalent left factored grammar and algorithm for removal of left recursion, and print the grammar to output file.
+5. Take the input baseGrammar from "InputGrammar.txt".
+6. Print the input baseGrammar to output file.
+7. Make the baseGrammar as LL(1), apply algorithm for producing an equivalent left factored baseGrammar and algorithm for removal of left recursion, and print the baseGrammar to output file.
 8. Compute the first and follow set, and print it to output file.
 9. Read the list of tokens from flex program output file.
-10. Create a parsing table for LL(1) grammar, and print it to output file.
+10. Create a parsing table for LL(1) baseGrammar, and print it to output file.
 11. Feed the tokens to parser, which parses using parsing table.
 12. Write the steps of parser to output file.
-13. Print if the input text is accepted by the grammar or not.
+13. Print if the input text is accepted by the baseGrammar or not.
 
 
 <p>For more details check the pdf: <a href="Question.pdf">"Question.pdf"</a></p>
 
 ## Future scope of this project
 1. As the above written steps can be done in parallel manner, we can find a dependency graph for the above steps, and apply threading.
-2. Currently, the program does not check if the grammar is LL(1) or not. (This can be done by checking if their exists more than one production rule in a cell of parsing table.)
+2. Currently, the program does not check if the baseGrammar is LL(1) or not. (This can be done by checking if their exists more than one production rule in a cell of parsing table.)
 3. Also, the program does not check for error in lexical analysis explicitly. It will print error while parsing, but we can analyse the tokens and comment on lexical analysis.
 4. The lex program is now hardcoded explicitly, we can write a program which can create a "lex.l" for us, and then use it for lexical analysis.

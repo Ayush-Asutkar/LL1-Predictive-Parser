@@ -1,5 +1,6 @@
 package helperfunction;
 
+import grammar.Grammar;
 import grammar.PredictiveParserLL1Grammar;
 import model.Token;
 import model.TokenBuilder;
@@ -55,12 +56,12 @@ public class ReadingInput {
         return result;
     }
 
-    public static PredictiveParserLL1Grammar readAndCreateLL1Grammar(String path) throws IOException {
+    public static Grammar readAndCreateLL1Grammar(String path) throws IOException {
         File file = new File(path);
 
         BufferedReader br = new BufferedReader(new FileReader(file));
 
-        PredictiveParserLL1Grammar grammar = new PredictiveParserLL1Grammar();
+        Grammar grammar = new PredictiveParserLL1Grammar();
 
         String startSymbol = br.readLine();
         grammar.setFirstSymbol(startSymbol);

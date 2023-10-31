@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-public class PredictiveParserLL1Grammar extends Grammar {
+public class PredictiveParserLL1Grammar extends BaseGrammar {
     /**
      * Map(Non-Terminal, Map(Terminal, ProductionRule))
      */
@@ -79,6 +79,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
         return result;
     }
 
+    @Override
     public void createParsingTable() {
         this.createEmptyParsingTable();
 
@@ -111,6 +112,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
         return length;
     }
 
+    @Override
     public void printParsingTable() {
         System.out.println("This is the parsing table: ");
 
@@ -131,6 +133,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
         System.out.println();
     }
 
+    @Override
     public void printParsingTableToFile(String path) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(path));
         writer.write("Following is the parsing table:\n");
@@ -175,6 +178,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
 
     private StringBuilder stringBuilderForOutputFile = null;
 
+    @Override
     public void printParsingStepsToFile(String path, boolean accepted) throws IOException {
         assert stringBuilderForOutputFile != null;
 
@@ -212,6 +216,7 @@ public class PredictiveParserLL1Grammar extends Grammar {
         this.stringBuilderForOutputFile.append("\n");
     }
 
+    @Override
     public boolean parser(List<Token> tokens) {
         this.stringBuilderForOutputFile = new StringBuilder();
         Stack<String> stack = new Stack<>();
@@ -219,7 +224,8 @@ public class PredictiveParserLL1Grammar extends Grammar {
         stack.add(super.getFirstSymbol());
 
         int indexOnToken = 0;
-        while(!stack.peek().equals("$")) {
+//        while(!stack.peek().equals("$")) {
+        while(!stack.isEmpty()  &&  (indexOnToken < tokens.size())) {
             String topElement = stack.peek();
             if (super.isNonTerminalSymbol(topElement)) {
                 ProductionRule ruleToApply = this.getProductionRuleFromParsingTable(topElement, tokens.get(indexOnToken).getTokenName());
@@ -255,137 +261,157 @@ public class PredictiveParserLL1Grammar extends Grammar {
                     this.stringBuilderForOutputFile.append("Could not be match: ").append(topElement).append(" with ").append(tokens.get(indexOnToken)).append("\n");
                     return false;
                 }
+            } else {
+                return false;
             }
         }
 
-        return true;
+        return (indexOnToken == tokens.size());
     }
 
     public static void main(String[] args) {
         PredictiveParserLL1Grammar predictiveParserLL1Grammar = new PredictiveParserLL1Grammar();
 
-        predictiveParserLL1Grammar.setFirstSymbol("E");
-
-        predictiveParserLL1Grammar.addTerminalSymbol("(");
-        predictiveParserLL1Grammar.addTerminalSymbol(")");
-        predictiveParserLL1Grammar.addTerminalSymbol("+");
-        predictiveParserLL1Grammar.addTerminalSymbol("*");
-        predictiveParserLL1Grammar.addTerminalSymbol("id");
-
-        predictiveParserLL1Grammar.addNonTerminalSymbol("E");
-        predictiveParserLL1Grammar.addNonTerminalSymbol("E'");
-        predictiveParserLL1Grammar.addNonTerminalSymbol("T");
-        predictiveParserLL1Grammar.addNonTerminalSymbol("T'");
-        predictiveParserLL1Grammar.addNonTerminalSymbol("F");
-
-        predictiveParserLL1Grammar.addRule("E -> T E'");
-        predictiveParserLL1Grammar.addRule("E' -> + T E' | ε");
-        predictiveParserLL1Grammar.addRule("T -> F T'");
-        predictiveParserLL1Grammar.addRule("T' -> * F T' | ε");
-        predictiveParserLL1Grammar.addRule("F -> ( E ) | id");
-//        predictiveParserLL1Grammar.printGrammar();
-
-        //Add first set and follow set manually
-        Set<String> firstSet = new HashSet<>();
-        firstSet.add("id");
-        firstSet.add("(");
-        predictiveParserLL1Grammar.addAllFirstSet("E", firstSet);
-
-        firstSet.clear();
-        firstSet.add("+");
-        firstSet.add("ε");
-        predictiveParserLL1Grammar.addAllFirstSet("E'", firstSet);
-
-        firstSet.clear();
-        firstSet.add("id");
-        firstSet.add("(");
-        predictiveParserLL1Grammar.addAllFirstSet("T", firstSet);
-
-        firstSet.clear();
-        firstSet.add("*");
-        firstSet.add("ε");
-        predictiveParserLL1Grammar.addAllFirstSet("T'", firstSet);
-
-        firstSet.clear();
-        firstSet.add("id");
-        firstSet.add("(");
-        predictiveParserLL1Grammar.addAllFirstSet("F", firstSet);
-
-        firstSet.clear();
-        firstSet.add("id");
-        predictiveParserLL1Grammar.addAllFirstSet("id", firstSet);
-
-        firstSet.clear();
-        firstSet.add("+");
-        predictiveParserLL1Grammar.addAllFirstSet("+", firstSet);
-
-        firstSet.clear();
-        firstSet.add("*");
-        predictiveParserLL1Grammar.addAllFirstSet("*", firstSet);
-
-        firstSet.clear();
-        firstSet.add("(");
-        predictiveParserLL1Grammar.addAllFirstSet("(", firstSet);
-
-        firstSet.clear();
-        firstSet.add(")");
-        predictiveParserLL1Grammar.addAllFirstSet(")", firstSet);
-
-        Set<String> followSet = new HashSet<>();
-        followSet.add("$");
-        followSet.add(")");
-        predictiveParserLL1Grammar.addAllFollowSet("E", followSet);
-
-        followSet.clear();
-        followSet.add("$");
-        followSet.add(")");
-        predictiveParserLL1Grammar.addAllFollowSet("E'", followSet);
-
-        followSet.clear();
-        followSet.add("+");
-        followSet.add("$");
-        followSet.add(")");
-        predictiveParserLL1Grammar.addAllFollowSet("T", followSet);
-
-        followSet.clear();
-        followSet.add("+");
-        followSet.add("$");
-        followSet.add(")");
-        predictiveParserLL1Grammar.addAllFollowSet("T'", followSet);
-
-        followSet.clear();
-        followSet.add("*");
-        followSet.add("+");
-        followSet.add("$");
-        followSet.add(")");
-        predictiveParserLL1Grammar.addAllFollowSet("F", followSet);
+//        predictiveParserLL1Grammar.setFirstSymbol("E");
+//
+//        predictiveParserLL1Grammar.addTerminalSymbol("(");
+//        predictiveParserLL1Grammar.addTerminalSymbol(")");
+//        predictiveParserLL1Grammar.addTerminalSymbol("+");
+//        predictiveParserLL1Grammar.addTerminalSymbol("*");
+//        predictiveParserLL1Grammar.addTerminalSymbol("id");
+//
+//        predictiveParserLL1Grammar.addNonTerminalSymbol("E");
+//        predictiveParserLL1Grammar.addNonTerminalSymbol("E'");
+//        predictiveParserLL1Grammar.addNonTerminalSymbol("T");
+//        predictiveParserLL1Grammar.addNonTerminalSymbol("T'");
+//        predictiveParserLL1Grammar.addNonTerminalSymbol("F");
+//
+//        predictiveParserLL1Grammar.addRule("E -> T E'");
+//        predictiveParserLL1Grammar.addRule("E' -> + T E' | ε");
+//        predictiveParserLL1Grammar.addRule("T -> F T'");
+//        predictiveParserLL1Grammar.addRule("T' -> * F T' | ε");
+//        predictiveParserLL1Grammar.addRule("F -> ( E ) | id");
+////        predictiveParserLL1Grammar.printGrammar();
+//
+//        //Add first set and follow set manually
+//        Set<String> firstSet = new HashSet<>();
+//        firstSet.add("id");
+//        firstSet.add("(");
+//        predictiveParserLL1Grammar.addAllFirstSet("E", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("+");
+//        firstSet.add("ε");
+//        predictiveParserLL1Grammar.addAllFirstSet("E'", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("id");
+//        firstSet.add("(");
+//        predictiveParserLL1Grammar.addAllFirstSet("T", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("*");
+//        firstSet.add("ε");
+//        predictiveParserLL1Grammar.addAllFirstSet("T'", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("id");
+//        firstSet.add("(");
+//        predictiveParserLL1Grammar.addAllFirstSet("F", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("id");
+//        predictiveParserLL1Grammar.addAllFirstSet("id", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("+");
+//        predictiveParserLL1Grammar.addAllFirstSet("+", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("*");
+//        predictiveParserLL1Grammar.addAllFirstSet("*", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add("(");
+//        predictiveParserLL1Grammar.addAllFirstSet("(", firstSet);
+//
+//        firstSet.clear();
+//        firstSet.add(")");
+//        predictiveParserLL1Grammar.addAllFirstSet(")", firstSet);
+//
+//        Set<String> followSet = new HashSet<>();
+//        followSet.add("$");
+//        followSet.add(")");
+//        predictiveParserLL1Grammar.addAllFollowSet("E", followSet);
+//
+//        followSet.clear();
+//        followSet.add("$");
+//        followSet.add(")");
+//        predictiveParserLL1Grammar.addAllFollowSet("E'", followSet);
+//
+//        followSet.clear();
+//        followSet.add("+");
+//        followSet.add("$");
+//        followSet.add(")");
+//        predictiveParserLL1Grammar.addAllFollowSet("T", followSet);
+//
+//        followSet.clear();
+//        followSet.add("+");
+//        followSet.add("$");
+//        followSet.add(")");
+//        predictiveParserLL1Grammar.addAllFollowSet("T'", followSet);
+//
+//        followSet.clear();
+//        followSet.add("*");
+//        followSet.add("+");
+//        followSet.add("$");
+//        followSet.add(")");
+//        predictiveParserLL1Grammar.addAllFollowSet("F", followSet);
 
 //        predictiveParserLL1Grammar.printFirstAndFollowSet();
 //        predictiveParserLL1Grammar.printGrammar();
-        predictiveParserLL1Grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
+//        predictiveParserLL1Grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
 //        predictiveParserLL1Grammar.printGrammar();
+//        predictiveParserLL1Grammar.applyAlgorithmForRemovalOfLeftRecursion();
+//        predictiveParserLL1Grammar.printGrammar();
+
+        predictiveParserLL1Grammar.setFirstSymbol("S");
+        predictiveParserLL1Grammar.addTerminalSymbol("n");
+        predictiveParserLL1Grammar.addTerminalSymbol("+");
+        predictiveParserLL1Grammar.addTerminalSymbol("*");
+        predictiveParserLL1Grammar.addNonTerminalSymbol("S");
+        predictiveParserLL1Grammar.addNonTerminalSymbol("A");
+        predictiveParserLL1Grammar.addNonTerminalSymbol("B");
+        predictiveParserLL1Grammar.addRule("S -> n");
+        predictiveParserLL1Grammar.addRule("A -> + | *");
+        predictiveParserLL1Grammar.addRule("B -> n B A B | ε");
+
         predictiveParserLL1Grammar.applyAlgorithmForRemovalOfLeftRecursion();
-//        predictiveParserLL1Grammar.printGrammar();
+        predictiveParserLL1Grammar.applyAlgorithmForProducingAnEquivalentLeftFactored();
+        predictiveParserLL1Grammar.printGrammar();
+
+        predictiveParserLL1Grammar.computeFirstAndFollowForAllSymbols();
+        predictiveParserLL1Grammar.printFirstAndFollowSet();
 
         predictiveParserLL1Grammar.createParsingTable();
 
         predictiveParserLL1Grammar.printParsingTable();
-
-        List<Token> tokens = new ArrayList<>();
-        Token token = new Token("id", "id");
-        tokens.add(token);
-        token = new Token("+", "+");
-        tokens.add(token);
-        token = new Token("id", "id");
-        tokens.add(token);
-        token = new Token("*", "*");
-        tokens.add(token);
-        token = new Token("id", "id");
-        tokens.add(token);
-        token = new Token("$", "$");
-        tokens.add(token);
-
-        boolean parsed = predictiveParserLL1Grammar.parser(tokens);
-        System.out.println(parsed? "Accepted":"Rejected");
+//
+//        List<Token> tokens = new ArrayList<>();
+//        Token token = new Token("id", "id");
+//        tokens.add(token);
+//        token = new Token("+", "+");
+//        tokens.add(token);
+//        token = new Token("id", "id");
+//        tokens.add(token);
+//        token = new Token("*", "*");
+//        tokens.add(token);
+//        token = new Token("id", "id");
+//        tokens.add(token);
+//        token = new Token("$", "$");
+//        tokens.add(token);
+//
+//        boolean parsed = predictiveParserLL1Grammar.parser(tokens);
+//        System.out.println(parsed? "Accepted":"Rejected");
     }
 }

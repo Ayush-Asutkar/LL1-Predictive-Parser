@@ -1,4 +1,4 @@
-import grammar.PredictiveParserLL1Grammar;
+import grammar.Grammar;
 import helperfunction.ReadingInput;
 import helperfunction.RunningLex;
 import model.Token;
@@ -26,7 +26,7 @@ public class Main {
         RunningLex.compileAndRunFlex(directoryPath);
     }
 
-    private static PredictiveParserLL1Grammar takeLL1GrammarInput() throws IOException {
+    private static Grammar takeLL1GrammarInput() throws IOException {
         String pathToInputGrammar = homeDirectory + "\\Input\\InputGrammar.txt";
         return ReadingInput.readAndCreateLL1Grammar(pathToInputGrammar);
     }
@@ -60,22 +60,22 @@ public class Main {
         Files.createDirectory(outputDirectoryPath);
     }
 
-    private static void printGrammarWithNoteToFile(PredictiveParserLL1Grammar grammar, String note) throws IOException {
+    private static void printGrammarWithNoteToFile(Grammar grammar, String note) throws IOException {
         String pathToOutputDirectory = homeDirectory + "\\Output";
         grammar.printGrammarToFile(pathToOutputDirectory, note);
     }
 
-    private static void printFirstFollowSetToFile(PredictiveParserLL1Grammar grammar) throws IOException {
+    private static void printFirstFollowSetToFile(Grammar grammar) throws IOException {
         String pathToOutputDirectory = homeDirectory + "\\Output";
         grammar.printFirstAndFollowSetToFile(pathToOutputDirectory, "First Follow Set");
     }
 
-    private static void printParsingTableToFile(PredictiveParserLL1Grammar grammar) throws IOException {
+    private static void printParsingTableToFile(Grammar grammar) throws IOException {
         String pathToOutputFile = homeDirectory + "\\Output\\ParsingTable.txt";
         grammar.printParsingTableToFile(pathToOutputFile);
     }
 
-    private static void printParsingStepsToFile(PredictiveParserLL1Grammar grammar, boolean parserAccepted) throws IOException {
+    private static void printParsingStepsToFile(Grammar grammar, boolean parserAccepted) throws IOException {
         String pathToOutputFile = homeDirectory + "\\Output\\ParsingSteps.txt";
         grammar.printParsingStepsToFile(pathToOutputFile, parserAccepted);
     }
@@ -87,7 +87,8 @@ public class Main {
             createOutputDirectory();
         } catch (IOException e) {
             System.out.println("Could not create output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
 
@@ -104,7 +105,8 @@ public class Main {
             copyContentsFromInputTextToInput(grammarChoice);
         } catch (RuntimeException e) {
             System.out.println("Could not copy contents of file InputText to particular flex input");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         //compile and run the flex
@@ -112,19 +114,19 @@ public class Main {
             compileAndRunFlex(grammarChoice);
         } catch (RuntimeException e) {
             System.out.println("Could not compile and run flex program");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         //take input the grammar
-        PredictiveParserLL1Grammar grammar = null;
+        Grammar grammar = null;
         try {
             grammar = takeLL1GrammarInput();
         } catch (IOException e) {
             System.out.println("Unable to read from grammar file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
-
-        assert grammar != null;
 
         System.out.println("Input Grammar: ");
         grammar.printGrammar();
@@ -133,7 +135,8 @@ public class Main {
             printGrammarWithNoteToFile(grammar, "Input Grammar");
         } catch (IOException e) {
             System.out.println("Could not write input grammar to output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
 
@@ -148,7 +151,8 @@ public class Main {
             printGrammarWithNoteToFile(grammar, "Equivalent Left Factored and Removing Left Recursion Grammar");
         } catch (IOException e) {
             System.out.println("Could not write Equivalent Left Factored and Removing Left Recursion grammar to output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         //compute the first and follow set
@@ -159,7 +163,8 @@ public class Main {
             printFirstFollowSetToFile(grammar);
         } catch (IOException e) {
             System.out.println("Could not write First Follow Set to output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         //Take the list of tokens from flex program
@@ -168,10 +173,10 @@ public class Main {
             tokens = takeFlexProgramTokenList(grammarChoice);
         } catch (IOException e) {
             System.out.println("Unable to read from Flex output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
-        assert tokens != null;
 //        System.out.println(tokens);
 
         //create parsing table
@@ -182,7 +187,8 @@ public class Main {
             printParsingTableToFile(grammar);
         } catch (IOException e) {
             System.out.println("Could not write parsing table to output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         //apply the parser
@@ -191,7 +197,8 @@ public class Main {
             printParsingStepsToFile(grammar, parserAccepted);
         } catch (IOException e) {
             System.out.println("Unable to write parser steps to output file");
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            System.exit(-1);
         }
 
         if(parserAccepted) {
